@@ -1,4 +1,4 @@
-# questimator
+# Questimator
 Questimator (under development), is an application service that generates multiple-choice assessment questions for any topic contained within Wikipedia.
 
 ## How to get started?
