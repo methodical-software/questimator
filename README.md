@@ -7,7 +7,7 @@ Questimator (under development), is an application service that generates multip
 
 Prerequisites:
 * [Java 1.8.x](https://www.oracle.com/technetwork/java/javase/downloads/index.html)
-* [sbt build tool](https://www.scala-sbt.org/download.html)
+* [sbt build tool 1.2.8](https://www.scala-sbt.org/download.html)
 
 ### Running application
 
