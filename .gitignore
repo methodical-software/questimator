@@ -1,3 +1,6 @@
 **/.g8/**
 **/.idea/**
 **/target/**
+*.iml
+.gradle
+logs
