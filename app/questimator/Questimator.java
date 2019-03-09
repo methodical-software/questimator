@@ -1,13 +1,21 @@
 package questimator;
 
+import java.util.List;
+import wiki.WikiClient;
+
 public class Questimator {
   public Question generateMCQ(String topic) {
-    // TODO: Related topic identification
+    Question question = new Question(topic);
+
+    // Related topic identification
+    WikiClient wikiClient = new WikiClient();
+    List<String> relatedTopics = wikiClient.getLinks(topic);
+    question.setRelatedTopics(relatedTopics);
 
     // TODO: Question generation
 
     // TODO: Multiple choice generation
 
-    return new Question(topic);
+    return question;
   }
 }
