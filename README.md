@@ -14,3 +14,25 @@ Prerequisites:
 ```
 sbt run
 ```
+
+### Example
+
+```
+curl -X POST http://localhost:9000/wiki/mcq -H 'Content-Type: application/json' -d '{ "topic": "Machine learning" }'
+
+{
+    "topic": "Machine learning",
+    "relatedTopics": [
+        "algorithm",
+        "supervised learning",
+        "statistica",
+        "artificial intelligence",
+        "statistics",
+        "mathematica",
+        "neuron",
+        "neural network",
+        "data mining",
+        "unsupervised learning"
+    ]
+}
+```
