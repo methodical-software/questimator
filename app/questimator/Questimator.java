@@ -1,17 +1,25 @@
 package questimator;
 
+import edu.stanford.nlp.ling.HasWord;
+import edu.stanford.nlp.parser.lexparser.LexicalizedParser;
+import edu.stanford.nlp.process.Tokenizer;
+import edu.stanford.nlp.trees.Tree;
+import edu.stanford.nlp.trees.TreebankLanguagePack;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.stream.Collectors;
 import wiki.WikiClient;
+import wiki.WikiParser;
 
 public class Questimator {
   private static final int MAX_RELATED_TOPICS = 10;
   private WikiClient wikiClient = new WikiClient();
+  private WikiParser wikiParser = new WikiParser();
 
   public Question generateMCQ(String topic) {
     Question question = new Question(topic);
@@ -41,7 +49,20 @@ public class Questimator {
 
     question.setRelatedTopics(topRelatedTopics);
 
+    // Get list of sentences in page text for question generation
+    String pageText = wikiClient.getPageText(topic);
+    List<String> sentences = wikiParser.getSentences(pageText);
+
     // TODO: Question generation
+    String parserModel = "englishPCFG.ser.gz";
+    LexicalizedParser lp = LexicalizedParser.loadModel(parserModel);
+    TreebankLanguagePack tlp = lp.getOp().langpack();
+    String sent2 = "This is another sentence.";
+    Tokenizer<? extends HasWord> tokenizer =
+        tlp.getTokenizerFactory().getTokenizer(new StringReader(sent2));
+    List<? extends HasWord> sentence2 = tokenizer.tokenize();
+    Tree parse = lp.parse(sentence2);
+    parse.pennPrint();
 
     // TODO: Multiple choice generation
 

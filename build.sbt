@@ -12,3 +12,4 @@ resolvers += "Spring Plugins Repository" at "http://repo.spring.io/plugins-relea
 libraryDependencies += guice
 
 libraryDependencies += "fastily" % "jwiki" % "1.7.0"
+libraryDependencies += "edu.stanford.nlp" % "stanford-corenlp" % "3.9.2"
