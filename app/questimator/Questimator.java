@@ -51,6 +51,7 @@ public class Questimator {
 
     // Get list of sentences in page text for question generation
     String pageText = wikiClient.getPageText(topic);
+    // System.out.println(pageText);
     List<String> sentences = wikiParser.getSentences(pageText);
 
     // TODO: Question generation
