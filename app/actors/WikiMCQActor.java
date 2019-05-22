@@ -24,7 +24,11 @@ public class WikiMCQActor extends AbstractActor {
                 MCQError error = new MCQError("Mandatory parameter topic is blank.");
                 sender().tell(error, self());
               } else {
-                QuestimatorResponse questimatorResponse = questimator.generateMCQ(mcqRequest.getTopic(), mcqRequest.getNumQuestions(), mcqRequest.getNumOptions());
+                QuestimatorResponse questimatorResponse =
+                    questimator.generateMCQ(
+                        mcqRequest.getTopic(),
+                        mcqRequest.getNumQuestions(),
+                        mcqRequest.getNumOptions());
                 sender().tell(questimatorResponse, self());
               }
             })

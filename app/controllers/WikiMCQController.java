@@ -32,7 +32,8 @@ public class WikiMCQController extends Controller {
     String topic = json.findPath("topic").textValue();
     int numQuestions = json.findPath("numQuestions").intValue();
     int numOptions = json.findPath("numOptions").intValue();
-    return FutureConverters.toJava(ask(mcqActor, new MCQRequest(topic, numQuestions, numOptions), 1000000))
+    return FutureConverters.toJava(
+            ask(mcqActor, new MCQRequest(topic, numQuestions, numOptions), 1000000))
         .thenApply(response -> ok(Json.toJson(response)));
   }
 }

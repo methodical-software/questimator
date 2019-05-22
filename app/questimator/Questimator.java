@@ -6,6 +6,8 @@ import edu.stanford.nlp.parser.lexparser.LexicalizedParser;
 import edu.stanford.nlp.process.Tokenizer;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreebankLanguagePack;
+import edu.stanford.nlp.trees.tregex.TregexMatcher;
+import edu.stanford.nlp.trees.tregex.TregexPattern;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.StringReader;
@@ -14,9 +16,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.stream.Collectors;
-
-import edu.stanford.nlp.trees.tregex.TregexMatcher;
-import edu.stanford.nlp.trees.tregex.TregexPattern;
 import wiki.WikiClient;
 import wiki.WikiParser;
 
@@ -68,27 +67,26 @@ public class Questimator {
       TreebankLanguagePack tlp = lp.getOp().langpack();
 
       String sentence = sentences.get(sentenceIndex++);
-      if (!sentence.contains(" is ")) continue;
+      // if (!sentence.contains(" is ")) continue;
 
       Tokenizer<? extends HasWord> tokenizer =
-              tlp.getTokenizerFactory().getTokenizer(new StringReader(sentence));
+          tlp.getTokenizerFactory().getTokenizer(new StringReader(sentence));
       List<? extends HasWord> tokenList = tokenizer.tokenize();
       Tree parse = lp.parse(tokenList);
-      //System.out.println(parse.toString());
+      // System.out.println(parse.toString());
       parse.pennPrint();
 
       // Multiple choice generation
-      String s = "(VP [> S=parent] [$ NP] [< VBZ] [< NP=answer]) : (=parent > ROOT)";
+      String s = "(VP [> S=parent] [$ NP] [< VBZ=vbz] [< NP=answer]) : (=parent > ROOT)";
 
       TregexPattern p = TregexPattern.compile(s);
       TregexMatcher m = p.matcher(parse);
       if (m.find()) {
-        String answer = getOptionString(m.getNode("answer").yieldWords());
-        answer = answer.replace("-LRB- ", "(");
-        answer = answer.replace(" -RRB-", ")");
-        answer = answer.replace("`` ", "\"");
-        answer = answer.replace(" ''", "\"");
-        answer = answer.replace(" '", "'");
+        String vbz = getOptionString(m.getNode("vbz").yieldWords());
+        String answer = getOptionString(m.getMatch().yieldWords());
+
+        answer = answer.replaceFirst(vbz, "").trim();
+
         String question = sentence.replace(answer, "__________");
 
         MCQ mcq = new MCQ();
@@ -96,7 +94,7 @@ public class Questimator {
         mcq.addOption(answer);
         questimatorResponse.addMCQ(mcq);
 
-        System.out.println("questimatorResponse = " + question);
+        System.out.println("question = " + question);
         System.out.println("answer = " + answer);
         parse.pennPrint();
 
@@ -153,9 +151,17 @@ public class Questimator {
 
   private String getOptionString(List<Word> optionWordList) {
     StringBuilder optionStrBuilder = new StringBuilder();
-    optionWordList.stream().forEach(
-            word -> optionStrBuilder.append(word).append(" ")
-    );
-    return optionStrBuilder.toString().trim();
+    optionWordList.stream().forEach(word -> optionStrBuilder.append(word).append(" "));
+
+    String optionStr = optionStrBuilder.toString().trim();
+
+    optionStr = optionStr.replaceAll("-LRB- ", "(");
+    optionStr = optionStr.replaceAll(" -RRB-", ")");
+    optionStr = optionStr.replaceAll("`` ", "\"");
+    optionStr = optionStr.replaceAll(" ''", "\"");
+    optionStr = optionStr.replaceAll(" '", "'");
+    optionStr = optionStr.replaceAll(" ,", ",");
+
+    return optionStr;
   }
 }
