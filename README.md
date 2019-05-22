@@ -20,25 +20,37 @@ sbt run
 Request:
 ```
 curl -X POST http://localhost:9000/wiki/mcq -H 'Content-Type: application/json' -d '{ 
-  "topic": "Machine learning" 
+  "topic": "Biology",
+  "numQuestions": 1,
+  "numOptions": 1
 }'
 ```
 
 Response:
 ```
 {
-    "topic": "Machine learning",
-    "relatedTopics": [
-        "algorithm",
-        "supervised learning",
-        "statistica",
-        "artificial intelligence",
-        "statistics",
-        "mathematica",
-        "neuron",
-        "neural network",
-        "data mining",
-        "unsupervised learning"
-    ]
+  "topic": "Biology",
+  "relatedTopics": [
+    "biology",
+    "rna",
+    "gene",
+    "organism",
+    "evolution",
+    "life",
+    "species",
+    "dna",
+    "genetics",
+    "animal"
+  ],
+  "numQuestions": 1,
+  "numOptions": 1,
+  "mcqlist": [
+    {
+      "question": "Biology is __________.",
+      "options": [
+        "the natural science that studies life and living organisms, including their physical structure, chemical processes, molecular interactions, physiological mechanisms, development and evolution"
+      ]
+    }
+  ]
 }
 ```
