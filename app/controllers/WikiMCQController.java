@@ -30,7 +30,9 @@ public class WikiMCQController extends Controller {
   public CompletionStage<Result> generateQuestion(Http.Request request) {
     JsonNode json = request.body().asJson();
     String topic = json.findPath("topic").textValue();
-    return FutureConverters.toJava(ask(mcqActor, new MCQRequest(topic), 10000))
+    int numQuestions = json.findPath("numQuestions").intValue();
+    int numOptions = json.findPath("numOptions").intValue();
+    return FutureConverters.toJava(ask(mcqActor, new MCQRequest(topic, numQuestions, numOptions), 1000000))
         .thenApply(response -> ok(Json.toJson(response)));
   }
 }

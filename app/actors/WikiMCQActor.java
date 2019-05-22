@@ -5,7 +5,7 @@ import akka.actor.AbstractActor;
 import akka.actor.Props;
 import org.springframework.util.StringUtils;
 import questimator.Questimator;
-import questimator.Question;
+import questimator.QuestimatorResponse;
 
 public class WikiMCQActor extends AbstractActor {
   final Questimator questimator = new Questimator();
@@ -24,8 +24,8 @@ public class WikiMCQActor extends AbstractActor {
                 MCQError error = new MCQError("Mandatory parameter topic is blank.");
                 sender().tell(error, self());
               } else {
-                Question question = questimator.generateMCQ(mcqRequest.getTopic());
-                sender().tell(question, self());
+                QuestimatorResponse questimatorResponse = questimator.generateMCQ(mcqRequest.getTopic(), mcqRequest.getNumQuestions(), mcqRequest.getNumOptions());
+                sender().tell(questimatorResponse, self());
               }
             })
         .build();

@@ -1,6 +1,7 @@
 package questimator;
 
 import edu.stanford.nlp.ling.HasWord;
+import edu.stanford.nlp.ling.Word;
 import edu.stanford.nlp.parser.lexparser.LexicalizedParser;
 import edu.stanford.nlp.process.Tokenizer;
 import edu.stanford.nlp.trees.Tree;
@@ -13,6 +14,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.stream.Collectors;
+
+import edu.stanford.nlp.trees.tregex.TregexMatcher;
+import edu.stanford.nlp.trees.tregex.TregexPattern;
 import wiki.WikiClient;
 import wiki.WikiParser;
 
@@ -21,8 +25,8 @@ public class Questimator {
   private WikiClient wikiClient = new WikiClient();
   private WikiParser wikiParser = new WikiParser();
 
-  public Question generateMCQ(String topic) {
-    Question question = new Question(topic);
+  public QuestimatorResponse generateMCQ(String topic, int numQuestions, int numOptions) {
+    QuestimatorResponse questimatorResponse = new QuestimatorResponse(topic);
 
     // Related topic identification
     List<String> relatedTopics = wikiClient.getLinks(topic);
@@ -47,27 +51,63 @@ public class Questimator {
     List<String> topRelatedTopics =
         topRelatedTerms.stream().map(term -> term.getTopic()).collect(Collectors.toList());
 
-    question.setRelatedTopics(topRelatedTopics);
+    questimatorResponse.setRelatedTopics(topRelatedTopics);
 
-    // Get list of sentences in page text for question generation
+    // Get list of sentences in page text for questimatorResponse generation
     String pageText = wikiClient.getPageText(topic);
     // System.out.println(pageText);
     List<String> sentences = wikiParser.getSentences(pageText);
 
-    // TODO: Question generation
-    String parserModel = "englishPCFG.ser.gz";
-    LexicalizedParser lp = LexicalizedParser.loadModel(parserModel);
-    TreebankLanguagePack tlp = lp.getOp().langpack();
-    String sent2 = "This is another sentence.";
-    Tokenizer<? extends HasWord> tokenizer =
-        tlp.getTokenizerFactory().getTokenizer(new StringReader(sent2));
-    List<? extends HasWord> sentence2 = tokenizer.tokenize();
-    Tree parse = lp.parse(sentence2);
-    parse.pennPrint();
+    // Questimator Response generation
+    int countQuestions = 0;
+    int sentenceIndex = 0;
 
-    // TODO: Multiple choice generation
+    while ((countQuestions < numQuestions) && (sentenceIndex < sentences.size())) {
+      String parserModel = "englishPCFG.ser.gz";
+      LexicalizedParser lp = LexicalizedParser.loadModel(parserModel);
+      TreebankLanguagePack tlp = lp.getOp().langpack();
 
-    return question;
+      String sentence = sentences.get(sentenceIndex++);
+      if (!sentence.contains(" is ")) continue;
+
+      Tokenizer<? extends HasWord> tokenizer =
+              tlp.getTokenizerFactory().getTokenizer(new StringReader(sentence));
+      List<? extends HasWord> tokenList = tokenizer.tokenize();
+      Tree parse = lp.parse(tokenList);
+      //System.out.println(parse.toString());
+      parse.pennPrint();
+
+      // Multiple choice generation
+      String s = "(VP [> S=parent] [$ NP] [< VBZ] [< NP=answer]) : (=parent > ROOT)";
+
+      TregexPattern p = TregexPattern.compile(s);
+      TregexMatcher m = p.matcher(parse);
+      if (m.find()) {
+        String answer = getOptionString(m.getNode("answer").yieldWords());
+        answer = answer.replace("-LRB- ", "(");
+        answer = answer.replace(" -RRB-", ")");
+        answer = answer.replace("`` ", "\"");
+        answer = answer.replace(" ''", "\"");
+        answer = answer.replace(" '", "'");
+        String question = sentence.replace(answer, "__________");
+
+        MCQ mcq = new MCQ();
+        mcq.setQuestion(question);
+        mcq.addOption(answer);
+        questimatorResponse.addMCQ(mcq);
+
+        System.out.println("questimatorResponse = " + question);
+        System.out.println("answer = " + answer);
+        parse.pennPrint();
+
+        countQuestions++;
+      }
+    }
+
+    questimatorResponse.setNumQuestions(countQuestions);
+    questimatorResponse.setNumOptions(numOptions);
+
+    return questimatorResponse;
   }
 
   private int getTermMaxWordCount(List<Term> terms) {
@@ -109,5 +149,13 @@ public class Questimator {
                 }
               });
     }
+  }
+
+  private String getOptionString(List<Word> optionWordList) {
+    StringBuilder optionStrBuilder = new StringBuilder();
+    optionWordList.stream().forEach(
+            word -> optionStrBuilder.append(word).append(" ")
+    );
+    return optionStrBuilder.toString().trim();
   }
 }
